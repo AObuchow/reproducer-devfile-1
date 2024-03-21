@@ -1,0 +1,40 @@
+schemaVersion: 2.1.0
+metadata:
+  name: python-hello-world
+components:
+  - name: tools
+    container:
+      image: quay.io/devfile/universal-developer-image:ubi8-latest
+      memoryLimit: 512Mi
+      mountSources: true
+      endpoints:
+        - name: webapp
+          targetPort: 4500
+          protocol: http
+          exposure: public
+          secure: true
+events:
+  preStop:
+    - git-push
+commands:
+  - id: run-application
+    exec:
+      label: Run application
+      component: tools
+      workingDir: ${PROJECT_SOURCE}
+      commandLine: python3 hello-world.py
+      group:
+        kind: run
+  - id: git-push
+    exec:
+      label: git commit
+      component: tools
+      workingDir: ${PROJECT_SOURCE}
+      commandLine: git add .; git commit -m 'test-prestop-commit'; git push
+      group:
+        kind: run
+projects:
+  - name: php-devspaces
+    git:
+      remotes:
+        origin:  https://github.com/odo-devfiles/springboot-ex.git
